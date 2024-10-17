@@ -13,14 +13,14 @@ arms <- c( "ARM A - SXMB-101 300mg", "ARM B - SXMB-101 600mg", "ARM C - SXMB-101
 arms %>% length()
 
 # Generate subject IDs
-n_subjects <- 80
-subject_ids <- sprintf("SXMB-101-%03d", 1:n_subjects)
-assigned_arms <- sample(rep(arms, each = 20))  # Randomly shuffle 20 subjects per arm
-
-# subjects_per_arm <- 20
-# n_subjects <- subjects_per_arm*length(arms)
+# n_subjects <- 80
 # subject_ids <- sprintf("SXMB-101-%03d", 1:n_subjects)
-# assigned_arms <- sample(rep(arms, each = subjects_per_arm))  # Randomly shuffle 20 subjects per arm
+# assigned_arms <- sample(rep(arms, each = 20))  # Randomly shuffle 20 subjects per arm
+
+subjects_per_arm <- 3
+n_subjects <- subjects_per_arm*length(arms)
+subject_ids <- sprintf("SXMB-101-%03d", 1:n_subjects)
+assigned_arms <- sample(rep(arms, each = subjects_per_arm))  # Randomly shuffle 20 subjects per arm
 
 df_1 <- tibble(
   USUBJID = subject_ids,
@@ -69,6 +69,9 @@ df_2 <- cross_join(df_1, visits) %>%
 df <- df_2 %>% 
   # filter(USUBJID %in% c("SXMB-101-001", "SXMB-101-002")) %>% 
   select(everything())
+
+
+# haven::write_xpt(df, "data/adpc_small.xpt")
 
 # 
 # ggplot(df, aes(x = factor(x_ord), y = AVAL, group = USUBJID, color = USUBJID)) +

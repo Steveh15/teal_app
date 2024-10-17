@@ -18,6 +18,7 @@ tibble(
 
 
 df %>% count(USUBJID, ARM) %>% count(ARM)
+
 arm_choices <- unique(df$ARM) %>% sort()
 
 subject_counts <- sapply(arm_choices, function(arm) {
