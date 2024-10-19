@@ -33,7 +33,7 @@ visits <- tibble(
   ADY = 1,
   ATPTN = seq(0,8, by = 2),
   AVISITN = 1
-) %>% rbind( tibble(ADY = c( c(2:7), seq(, 56, by = 7)), ATPTN = NA, AVISITN = NA)) %>% 
+) %>% rbind( tibble(ADY = c( c(2:7), seq(14, 56, by = 7)), ATPTN = NA, AVISITN = NA)) %>% 
   mutate(
     AVISIT = paste0("DAY ", ADY),
     
@@ -71,7 +71,8 @@ df <- df_2 %>%
   select(everything())
 
 
-# haven::write_xpt(df, "data/adpc_small.xpt")
+# haven::write_xpt(df, "data/adpc.xpt")
+haven::write_xpt(df, "data/adpc_small.xpt")
 
 # 
 # ggplot(df, aes(x = factor(x_ord), y = AVAL, group = USUBJID, color = USUBJID)) +

@@ -15,6 +15,7 @@ ui <- fluidPage(
                       ),
                       uiOutput("armCheckboxes"),
                       uiOutput("plot_n"),
+                      shiny::textOutput("error_message"),
                       shiny::textOutput("text_output")
                       
                       

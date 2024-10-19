@@ -1,8 +1,8 @@
 # Load necessary libraries
 library(shiny)
 library(tidyverse)
-
-
+library(reactlog)
+reactlog::reactlog_enable()
 
 # Define server logic
 server <- function(input, output, session) {
@@ -38,7 +38,7 @@ server <- function(input, output, session) {
   })
 
   output$armCheckboxes <- renderUI({
-    req(arm_values())  # Ensure arm_values are available
+    req(arm_values())  
     
     subject_counts <- sapply(arm_values(), function(arm) {
       length(unique(input_data()$USUBJID[input_data()$ARM == arm]))  # Count unique subjects for each arm
@@ -61,54 +61,61 @@ server <- function(input, output, session) {
   # --- Create plot data
   #############################
   
+  
+  n_subjects <- reactiveVal(NULL)
+
+  n_subjects_to_plot <- reactiveVal(5)
+
+  n_plot_is_valid <- reactiveVal(TRUE)
+  
+
   plot_data <- reactive({
     
     req(input_data())
-    req(input$selected_arms)
+  
+    if(is.null(input$selected_arms)){
+      df <- input_data() %>% filter(FALSE)  
+    } else{
+      df <- input_data() %>% filter(ARM %in% input$selected_arms)  
+    }
     
-    input_data() %>% filter(ARM %in% input$selected_arms)
+    # --- Update n_subjects_1
+    n_subjects(length(unique(df$USUBJID)))
+    
+    df
+    
   })
   
   output$plot_n <- renderUI({
-    req(plot_data())
-    req(nrow(plot_data()) != 0)
-    
-    n_subjects <- length(unique(plot_data()$USUBJID))
-    default_value = min(5, n_subjects)
-    
+    req(input_data())
+
     numericInput(
       "n_subjects_input",
       "Number of Subjects to Show:",
       min = 0,
-      max = n_subjects,
-      value = default_value
+      # max = n_subjects(),
+      step = 1,
+      value = isolate(n_subjects_to_plot())
     )
   })
-  
-  n_subjects_to_plot <- reactiveVal(NULL)
-  
+
+
   observeEvent(input$n_subjects_input, {
-    
+
+    req(input$n_subjects_input)
     new_value <- as.numeric(input$n_subjects_input)
-    
-    n_subjects <- length(unique(plot_data()$USUBJID))
-    
-    # Validate the new value
-    if (is.na(new_value)){
-      # Do nothing
-    } else if (new_value < 0 ){
-      n_subjects_to_plot(0)
-      updateNumericInput(session, "n_subjects_input", value = 0)
-    } else if(new_value > n_subjects){
-      n_subjects_to_plot(n_subjects)
-      updateNumericInput(session, "n_subjects_input", value = n_subjects)
-      
+
+    if(!is_integer(new_value) | new_value < 0 ){
+      n_plot_is_valid(FALSE)
     } else{
-      n_subjects_to_plot(new_value)
+      n_plot_is_valid(TRUE)
+      if(new_value != n_subjects_to_plot()){
+        n_subjects_to_plot(new_value)
+      }
     }
 
   })
-  
+
   
   #
   # --- Plot results
@@ -116,17 +123,11 @@ server <- function(input, output, session) {
   
   
   output$concentrationPlot <- renderPlot({
-    
+
     req(plot_data())
-    req(n_subjects_to_plot())
-    print("We got there!")
-    print(paste0("nplot: ", n_subjects_to_plot()))
-    print(paste0("other n: ", nrow(plot_data())))
-    print(input$selected_arms)
 
 
-    if(n_subjects_to_plot() == 0 | nrow(plot_data()) == 0){
-
+    if(is.null(input$selected_arms)){
 
       ggplot() +
         labs(x = "Ordinal Variable", y = "Concentration (AVAL)", title = "Concentration Over Time by Subject") +
@@ -151,14 +152,24 @@ server <- function(input, output, session) {
     }
 
 
-    
-    
+
+
   })
   
   
+  
+  output$error_message <- renderText({
+    if (!n_plot_is_valid()) {
+      return("Invalid input, please enter a positive integer")
+    } else {
+      return("")  # Return an empty string when valid
+    }
+  })
+  
   output$text_output <- renderText({
+    # print("HELLO")
     req(n_subjects_to_plot)
-    print(n_subjects_to_plot())
+    paste0( n_subjects(), " - ", n_subjects_to_plot())
     # n_subjects_to_plot()
     # req(plot_data())
     # plot_data() %>% nrow()

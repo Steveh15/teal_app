@@ -14,7 +14,29 @@ tibble(
 
 
 
+x <-
+  
+  
+is_integer <- function(x){
+  x_n <- x %>% as.numeric()
+  print(x_n)
+  
+  if(is.na(x_n) | x_n != floor(x_n) ){
+    return(FALSE)
+  } else{
+    return(TRUE)
+  }
+}
 
+is_integer(1.0)
+is_integer(1)
+is_integer(1.1)
+
+is_integer("1.0")
+is_integer("1")
+is_integer("1.1")
+
+?as.integer
 
 
 df %>% count(USUBJID, ARM) %>% count(ARM)
