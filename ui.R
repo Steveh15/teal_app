@@ -13,8 +13,13 @@ ui <- fluidPage(
                                 "ADPC input",
                                 accept = c(".sas7bdat", ".xpt")
                       ),
+                      
                       uiOutput("armCheckboxes"),
-                      uiOutput("plot_n"),
+                      fluidRow(
+                        column(3, uiOutput("decrease_subs")),    # Column for second action button
+                        column(6, uiOutput("plot_n")),          # Column for numeric input
+                        column(3, uiOutput("increase_subs"))   # Column for first action button
+                      ),
                       shiny::textOutput("error_message"),
                       shiny::textOutput("text_output")
                       

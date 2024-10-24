@@ -5,6 +5,7 @@ rm(list = ls())
 
 library(tidyverse)
 
+
 set.seed(123)  # Setting seed for reproducibility
 
 arms <- c( "ARM A - SXMB-101 300mg", "ARM B - SXMB-101 600mg", "ARM C - SXMB-101 900mg", "ARM D - SXMB-101 Placebo")
@@ -17,7 +18,7 @@ arms %>% length()
 # subject_ids <- sprintf("SXMB-101-%03d", 1:n_subjects)
 # assigned_arms <- sample(rep(arms, each = 20))  # Randomly shuffle 20 subjects per arm
 
-subjects_per_arm <- 3
+subjects_per_arm <- 20
 n_subjects <- subjects_per_arm*length(arms)
 subject_ids <- sprintf("SXMB-101-%03d", 1:n_subjects)
 assigned_arms <- sample(rep(arms, each = subjects_per_arm))  # Randomly shuffle 20 subjects per arm
@@ -72,7 +73,8 @@ df <- df_2 %>%
 
 
 # haven::write_xpt(df, "data/adpc.xpt")
-haven::write_xpt(df, "data/adpc_small.xpt")
+write.csv(df, file = "data/adpc.csv")
+# haven::write_xpt(df, "data/adpc_small.xpt")
 
 # 
 # ggplot(df, aes(x = factor(x_ord), y = AVAL, group = USUBJID, color = USUBJID)) +

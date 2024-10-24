@@ -2,6 +2,8 @@
 library(shiny)
 library(tidyverse)
 library(reactlog)
+library(teal)
+
 reactlog::reactlog_enable()
 
 # Define server logic
@@ -61,13 +63,14 @@ server <- function(input, output, session) {
   # --- Create plot data
   #############################
   
-  
-  n_subjects <- reactiveVal(NULL)
 
   n_subjects_to_plot <- reactiveVal(5)
 
   n_plot_is_valid <- reactiveVal(TRUE)
   
+  n_start <- reactiveVal(1)
+  
+  n_subjects <- reactiveVal(NULL)
 
   plot_data <- reactive({
     
@@ -77,9 +80,10 @@ server <- function(input, output, session) {
       df <- input_data() %>% filter(FALSE)  
     } else{
       df <- input_data() %>% filter(ARM %in% input$selected_arms)  
+      n_start(1)
     }
     
-    # --- Update n_subjects_1
+    # --- Update n_subjects
     n_subjects(length(unique(df$USUBJID)))
     
     df
@@ -93,10 +97,37 @@ server <- function(input, output, session) {
       "n_subjects_input",
       "Number of Subjects to Show:",
       min = 0,
-      # max = n_subjects(),
+      max = length(unique(input_data()$USUBJID)),
       step = 1,
       value = isolate(n_subjects_to_plot())
     )
+  })
+  
+  output$decrease_subs <- renderUI({
+    req(input_data())
+    actionButton("decrease_subs", paste0("Prev ", n_subjects_to_plot()) )
+  })
+  
+  output$increase_subs <- renderUI({
+    req(input_data())
+    actionButton("increase_subs", paste0("Next ", n_subjects_to_plot()))
+  })
+  
+  
+  observeEvent(input$decrease_subs, {
+    
+    if(n_start() - n_subjects_to_plot() >= 1){
+      n_start(n_start()-n_subjects_to_plot())
+    } else{
+        n_start(1)
+      }
+    
+  })
+  
+  observeEvent(input$increase_subs, {
+    if(n_start() + n_subjects_to_plot() <= n_subjects()){
+      n_start(n_start()+n_subjects_to_plot())
+    }
   })
 
 
@@ -127,7 +158,7 @@ server <- function(input, output, session) {
     req(plot_data())
 
 
-    if(is.null(input$selected_arms)){
+    if(is.null(input$selected_arms) | n_subjects_to_plot() == 0){
 
       ggplot() +
         labs(x = "Ordinal Variable", y = "Concentration (AVAL)", title = "Concentration Over Time by Subject") +
@@ -137,7 +168,7 @@ server <- function(input, output, session) {
     }
     else{
 
-      subjects_to_show <- sort(unique(plot_data()$USUBJID))[1:n_subjects_to_plot()]
+      subjects_to_show <- sort(unique(plot_data()$USUBJID))[n_start():(n_start() + n_subjects_to_plot() - 1)]
       data_to_plot <- plot_data() %>% filter(USUBJID %in% subjects_to_show)
 
       ggplot(data_to_plot, aes(x = as.factor(x_ord), y = AVAL, group = USUBJID, color = USUBJID)) +
@@ -169,7 +200,7 @@ server <- function(input, output, session) {
   output$text_output <- renderText({
     # print("HELLO")
     req(n_subjects_to_plot)
-    paste0( n_subjects(), " - ", n_subjects_to_plot())
+    paste0( n_subjects_to_plot(), " - ", n_start())
     # n_subjects_to_plot()
     # req(plot_data())
     # plot_data() %>% nrow()

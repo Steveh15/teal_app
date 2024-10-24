@@ -1,0 +1,2 @@
+
+Stop number of subjects resetting when arm is changed if the previous value is still valid
