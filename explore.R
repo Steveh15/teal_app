@@ -1,3 +1,17 @@
+
+
+
+
+
+pc <- pharmaversesdtm::pc
+
+
+adpc <- pharmaverseadam::adpc
+
+ ADLB = pharmaverseadam::adlb
+
+
+
 breaks = unique(df$x_ord)
 labels = unique(df$x_label) 
 
@@ -73,3 +87,9 @@ visits <- tibble(
 
 
 tibble(ADY = c( c(2:7), seq(7, 56, by = 7)), ATPTN = NA, AVISITN = NA)
+
+
+
+
+
+?within()
